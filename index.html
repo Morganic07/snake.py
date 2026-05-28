@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAKE</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            display: flex;
+            background-color: #f0f0f0;
+            padding: 10px;
+        }
+        canvas {
+            background-color: lightblue;
+            border: 1px solid #ccc;
+        }
+        .controls-panel {
+            width: 180px;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .info-text {
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        button {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            padding: 5px 10px;
+            margin-top: 100px;
+            cursor: pointer;
+            width: 120px;
+        }
+        #quit-btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <div class="controls-panel">
+        <div class="info-text">Moving keys:'ZQSD'</div>
+        <div class="info-text">Pause key:'B'</div>
+        <button id="new-game-btn">New game</button>
+        <button id="quit-btn">Quit</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let dx = 10;
+    let dy = 0;
+    let direction = 2; 
+    let score = 0;
+    let flag = 1;      
+    let flag2 = 0;     
+    let eat = 0;
+    let foodX, foodY;
+    let serpent = [];
+
+    document.getElementById("new-game-btn").addEventListener("click", newGame);
+    document.getElementById("quit-btn").addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        flag = 0;
+        flag2 = 1;
+    });
+
+    window.addEventListener("keydown", function(event) {
+        switch(event.key.toLowerCase()) {
+            case 'q':
+                if (direction !== 2) { dx = -10; dy = 0; direction = 1; }
+                break;
+            case 'd':
+                if (direction !== 1) { dx = 10; dy = 0; direction = 2; }
+                break;
+            case 'z':
+                if (direction !== 4) { dx = 0; dy = -10; direction = 3; }
+                break;
+            case 's':
+                if (direction !== 3) { dx = 0; dy = 10; direction = 4; }
+                break;
+            case 'b':
+                togglePause();
+                break;
+        }
+    });
+
+    // Équivalent strict de randrange(min, max, step) en Python
+    function getRandomRange(min, max) {
+        const possiblePositions = [];
+        for (let i = min; i < max; i += 10) {
+            possiblePositions.push(i);
+        }
+        const randomIndex = Math.floor(Math.random() * possiblePositions.length);
+        return possiblePositions[randomIndex];
+    }
+
+    function generateFood() {
+        // Aligné sur ton code Python : x entre 10 et 780, y entre 10 et 480
+        foodX = getRandomRange(10, 780);
+        foodY = getRandomRange(10, 480);
+
+        let onSerpent = true;
+        let attempts = 0; 
+        
+        while (onSerpent && attempts < 100) {
+            onSerpent = false;
+            for (let segment of serpent) {
+                if (segment.x === foodX && segment.y === foodY) {
+                    foodX = getRandomRange(10, 780);
+                    foodY = getRandomRange(10, 480);
+                    onSerpent = true;
+                    break;
+                }
+            }
+            attempts++;
+        }
+    }
+
+    function newGame() {
+        flag2 = 0;
+        score = 0;
+        dx = 10;
+        dy = 0;
+        direction = 2;
+        eat = 0;
+        
+        serpent = [{x: 50, y: 50}];
+        
+        generateFood();
+
+        if (flag === 0) {
+            flag = 1;
+            gameLoop();
+        }
+    }
+
+    function togglePause() {
+        if (flag2 !== 1) {
+            if (flag === 1) {
+                flag = 0;
+                draw(); 
+            } else if (flag === 0) {
+                flag = 1;
+                gameLoop();
+            }
+        }
+    }
+
+    function move() {
+        if (flag !== 1) return;
+
+        const head = {x: serpent[0].x + dx, y: serpent[0].y + dy};
+
+        if (head.x === foodX && head.y === foodY) {
+            score += 100;
+            eat = 1;
+        }
+
+        serpent.unshift(head);
+
+        if (eat === 0) {
+            serpent.pop();
+        } else {
+            eat = 0;
+            generateFood();
+        }
+
+        // Vérification des collisions avec les murs (Bordures de 10px)
+        if (head.x >= 790 || head.x <= 0 || head.y >= 490 || head.y <= 0) {
+            flag = 0;
+            flag2 = 1;
+        }
+
+        // Auto-collision
+        for (let i = 1; i < serpent.length; i++) {
+            if (head.x === serpent[i].x && head.y === serpent[i].y) {
+                flag = 0;
+                flag2 = 1;
+            }
+        }
+    }
+
+    function draw() {
+        ctx.fillStyle = "lightblue";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Murs
+        ctx.fillStyle = "blue";   ctx.fillRect(0, 0, 800, 10);
+        ctx.fillStyle = "red";    ctx.fillRect(0, 0, 10, 490);
+        ctx.fillStyle = "green";  ctx.fillRect(790, 0, 10, 500);
+        ctx.fillStyle = "orange"; ctx.fillRect(0, 490, 800, 10);
+
+        // Nourriture
+        ctx.fillStyle = "green";
+        ctx.fillRect(foodX, foodY, 10, 10);
+
+        // Serpent
+        for (let i = 0; i < serpent.length; i++) {
+            ctx.fillStyle = "red";
+            ctx.fillRect(serpent[i].x, serpent[i].y, 10, 10);
+        }
+
+        // Yeux jaunes
+        if (serpent.length > 0) {
+            const head = serpent[0];
+            ctx.fillStyle = "yellow";
+            
+            let eye1X, eye1Y, eye2X, eye2Y;
+            if (direction === 1) {
+                eye1X = head.x + 2; eye1Y = head.y + 2; eye2X = head.x + 2; eye2Y = head.y + 6;
+            } else if (direction === 2) {
+                eye1X = head.x + 6; eye1Y = head.y + 2; eye2X = head.x + 6; eye2Y = head.y + 6;
+            } else if (direction === 3) {
+                eye1X = head.x + 2; eye1Y = head.y + 2; eye2X = head.x + 6; eye2Y = head.y + 2;
+            } else if (direction === 4) {
+                eye1X = head.x + 2; eye1Y = head.y + 6; eye2X = head.x + 6; eye2Y = head.y + 6;
+            }
+
+            ctx.fillRect(eye1X, eye1Y, 2, 2);
+            ctx.fillRect(eye2X, eye2Y, 2, 2);
+        }
+
+        // UI Textes
+        ctx.fillStyle = "black";
+        ctx.font = "18px 'Courier New'";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+
+        if (flag2 === 1) {
+            ctx.fillText("Score : " + score, 400, 250);
+        } else if (flag === 0) {
+            ctx.fillText("PAUSE", 400, 250);
+        }
+    }
+
+    function gameLoop() {
+        if (flag === 1) {
+            move();
+            draw();
+            setTimeout(gameLoop, 50);
+        }
+    }
+
+    // Lancement automatique au chargement
+    newGame();
+    gameLoop();
+</script>
+
+</body>
+</html>
