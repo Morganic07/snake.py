@@ -19,5 +19,6 @@ Dirigez le serpent rouge pour lui faire manger les proies vertes. Chaque proie c
 
 ## Fichiers
 
-index.html   # Contient la structure HTML, les styles CSS et la logique JavaScript
-snake.py    #Code original en python (Tkinter)
+* index.html   # Contient la structure HTML, les styles CSS et la logique JavaScript
+
+* snake.py    #Code original en python (Tkinter)
