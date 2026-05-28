@@ -102,7 +102,6 @@
         }
     });
 
-    // Équivalent strict de randrange(min, max, step) en Python
     function getRandomRange(min, max) {
         const possiblePositions = [];
         for (let i = min; i < max; i += 10) {
@@ -113,7 +112,6 @@
     }
 
     function generateFood() {
-        // Aligné sur ton code Python : x entre 10 et 780, y entre 10 et 480
         foodX = getRandomRange(10, 780);
         foodY = getRandomRange(10, 480);
 
@@ -183,13 +181,11 @@
             generateFood();
         }
 
-        // Vérification des collisions avec les murs (Bordures de 10px)
         if (head.x >= 790 || head.x <= 0 || head.y >= 490 || head.y <= 0) {
             flag = 0;
             flag2 = 1;
         }
 
-        // Auto-collision
         for (let i = 1; i < serpent.length; i++) {
             if (head.x === serpent[i].x && head.y === serpent[i].y) {
                 flag = 0;
@@ -202,23 +198,19 @@
         ctx.fillStyle = "lightblue";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Murs
         ctx.fillStyle = "blue";   ctx.fillRect(0, 0, 800, 10);
         ctx.fillStyle = "red";    ctx.fillRect(0, 0, 10, 490);
         ctx.fillStyle = "green";  ctx.fillRect(790, 0, 10, 500);
         ctx.fillStyle = "orange"; ctx.fillRect(0, 490, 800, 10);
 
-        // Nourriture
         ctx.fillStyle = "green";
         ctx.fillRect(foodX, foodY, 10, 10);
 
-        // Serpent
         for (let i = 0; i < serpent.length; i++) {
             ctx.fillStyle = "red";
             ctx.fillRect(serpent[i].x, serpent[i].y, 10, 10);
         }
 
-        // Yeux jaunes
         if (serpent.length > 0) {
             const head = serpent[0];
             ctx.fillStyle = "yellow";
@@ -238,7 +230,6 @@
             ctx.fillRect(eye2X, eye2Y, 2, 2);
         }
 
-        // UI Textes
         ctx.fillStyle = "black";
         ctx.font = "18px 'Courier New'";
         ctx.textBaseline = "middle";
@@ -259,7 +250,6 @@
         }
     }
 
-    // Lancement automatique au chargement
     newGame();
     gameLoop();
 </script>
